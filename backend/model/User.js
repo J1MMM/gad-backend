@@ -20,17 +20,19 @@ const userSchema = new Schema({
     required: true,
   },
   refreshToken: String,
-  roles: {
-    admin: {
-      type: Number,
-      default: 0,
-    },
-  },
 
   archive: {
     type: Boolean,
     require: true,
     default: false,
+  },
+  verified: {
+    type: Boolean,
+    require: true,
+    default: false,
+  },
+  otp: {
+    type: String,
   },
 });
 

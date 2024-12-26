@@ -9,12 +9,13 @@ const {
   getUser,
   archiveUser,
   checkEmailDuplication,
+  verifyCode,
 } = require("../../controllers/usersController");
 const router = express.Router();
 
-// router.route("/");
+router.route("/").post(createUser);
+router.route("/verify").post(verifyCode);
 // .get(getAllUsers)
-// .post(createUser)
 // .put(updateUser)
 // .delete(deleteUser)
 // .patch(archiveUser);
