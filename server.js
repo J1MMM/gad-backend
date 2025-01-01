@@ -34,6 +34,8 @@ app.use("/logout", require("./routes/api/logout"));
 app.use("/reset-password", require("./routes/api/resetPassword"));
 app.use("/users", require("./routes/api/users"));
 
+app.use("/records", require("./routes/api/records"));
+
 // protected routes
 app.use(verifyJWT);
 
