@@ -2,7 +2,15 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const recordSchema = new Schema({
-  fullname: {
+  fname: {
+    type: String,
+    required: true,
+  },
+  mname: {
+    type: String,
+    required: true,
+  },
+  lname: {
     type: String,
     required: true,
   },
@@ -10,7 +18,7 @@ const recordSchema = new Schema({
     type: String,
     required: true,
   },
-  location: {
+  address: {
     type: String,
     required: true,
   },

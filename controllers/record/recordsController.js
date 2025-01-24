@@ -18,6 +18,34 @@ const getRecords = async (req, res) => {
   }
 };
 
+const addRecords = async (req, res) => {
+  const recordData = req.body;
+
+  // Validate input
+  if (!recordData || Object.keys(recordData).length === 0) {
+    return res.status(400).json({ message: "Record data is required." });
+  }
+
+  try {
+    // Create the record in the database
+    const result = await Record.create(recordData);
+
+    // Respond with success
+    res.status(201).json({
+      message: "Record added successfully.",
+      record: result,
+    });
+  } catch (error) {
+    console.error("Error adding record:", error);
+
+    // Respond with error details
+    res
+      .status(500)
+      .json({ message: "Failed to add record.", error: error.message });
+  }
+};
+
 module.exports = {
   getRecords,
+  addRecords,
 };
