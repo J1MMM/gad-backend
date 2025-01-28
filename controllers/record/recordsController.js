@@ -11,7 +11,12 @@ const getRecords = async (req, res) => {
       return res.status(204).json({ message: "No records found" });
     }
 
-    const records = result.map((obj) => ({ ...obj.toObject(), id: obj._id }));
+    const records = result.map((obj) => ({
+      ...obj.toObject(),
+      id: obj._id,
+      programYearSection: `${obj.program}-${obj.yearLevel}${obj.section}`,
+      fullname: `${obj.fname} ${obj.mname} ${obj.lname}`,
+    }));
     res.json(records);
   } catch (error) {
     res.status(400).json({ message: error.message });
