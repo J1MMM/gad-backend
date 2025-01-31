@@ -45,7 +45,7 @@ const recordSchema = new Schema({
 
   comorbidity: {
     type: String,
-    required: true,
+    required: false,
   },
   PWD: {
     type: String,
@@ -53,7 +53,16 @@ const recordSchema = new Schema({
   },
   socioEconomicStatus: {
     type: String,
+    required: false,
+  },
+  spcResident: {
+    type: String,
     required: true,
+  },
+  archived: {
+    type: Boolean,
+    required: true,
+    default: false,
   },
 });
 
