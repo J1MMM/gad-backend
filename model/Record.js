@@ -38,6 +38,10 @@ const recordSchema = new Schema({
     type: String,
     required: true,
   },
+  otherGender: {
+    type: String,
+    required: false,
+  },
   governmentBenificiaries: {
     type: String,
     required: true,
@@ -63,6 +67,15 @@ const recordSchema = new Schema({
     type: Boolean,
     required: true,
     default: false,
+  },
+  createdAt: {
+    type: Date,
+    required: true,
+    default: Date.now,
+  },
+  archivedAt: {
+    type: Date,
+    required: false,
   },
 });
 

@@ -61,6 +61,7 @@ const archiveRecord = async (req, res) => {
     }
 
     record.archived = true;
+    record.archivedAt = new Date();
     await record.save();
     res.json({ message: "Record archived successfully." });
     console.log("Record archived successfully.");
@@ -105,7 +106,9 @@ const updateRecord = async (req, res) => {
 
 const getAllArchivedRecords = async (req, res) => {
   try {
-    const result = await Record.find({ archived: true });
+    const result = await Record.find({ archived: true }).sort({
+      archivedAt: 1,
+    });
     if (!result || result.length === 0) {
       return res.status(204).json({ message: "No records found" });
     }
@@ -133,9 +136,9 @@ const restoreRecord = async (req, res) => {
     }
 
     record.archived = false;
+    record.archivedAt = null;
     await record.save();
     res.json({ message: "Record restored successfully." });
-    console.log("Record restored successfully.");
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
