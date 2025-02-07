@@ -3,6 +3,13 @@ const User = require("../../model/User");
 const nodeMailer = require("nodemailer");
 const ROLES_LIST = require("../../config/roles_list");
 const Record = require("../../model/Record");
+const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
+const timezone = require("dayjs/plugin/timezone");
+
+// Extend dayjs with the required plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const getRecords = async (req, res) => {
   try {
@@ -157,6 +164,9 @@ const getAnalytics = async (req, res) => {
       { $sort: { _id: 1 } }, // Sort by day of week
     ]);
 
+    console.log("result 1");
+    console.log(result);
+
     // Get today's index (0 = Sunday, 6 = Saturday)
     const todayIndex = new Date().getDay();
 
@@ -173,6 +183,9 @@ const getAnalytics = async (req, res) => {
       recordsData[dayIndex] = records;
       archivedData[dayIndex] = archived;
     });
+
+    console.log("result 2");
+    console.log(result);
 
     // **Ensure today's data is last in the array**
     const reorderedRecordsData = [
@@ -193,11 +206,23 @@ const getAnalytics = async (req, res) => {
       "Today", // Replace the last label with "Today"
     ];
 
-    const spcResident = await Record.countDocuments({ spcResident: "YES" });
-    const outsideSPC = await Record.countDocuments({ spcResident: "NO" });
+    const spcResident = await Record.countDocuments({
+      spcResident: "YES",
+      archived: false,
+    });
+    const outsideSPC = await Record.countDocuments({
+      spcResident: "NO",
+      archived: false,
+    });
     const totalRecords = await Record.countDocuments({ archived: false });
-    const totalMale = await Record.countDocuments({ gender: "MALE" });
-    const totalFemale = await Record.countDocuments({ gender: "FEMALE" });
+    const totalMale = await Record.countDocuments({
+      gender: "MALE",
+      archived: false,
+    });
+    const totalFemale = await Record.countDocuments({
+      gender: "FEMALE",
+      archived: false,
+    });
     const totalOtherGender = totalRecords - (totalMale + totalFemale);
 
     const _result = {
@@ -228,6 +253,8 @@ const getAnalytics = async (req, res) => {
 
     res.json(_result);
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({ message: error.message });
   }
 };
