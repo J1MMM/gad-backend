@@ -144,6 +144,94 @@ const restoreRecord = async (req, res) => {
   }
 };
 
+const getAnalytics = async (req, res) => {
+  try {
+    const result = await Record.aggregate([
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" }, // MongoDB: 1 = Sunday, 7 = Saturday
+          records: { $sum: 1 },
+          archived: { $sum: { $cond: ["$archived", 1, 0] } },
+        },
+      },
+      { $sort: { _id: 1 } }, // Sort by day of week
+    ]);
+
+    // Get today's index (0 = Sunday, 6 = Saturday)
+    const todayIndex = new Date().getDay();
+
+    // Define labels but replace today’s day with "Today"
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    // Initialize arrays with zeros
+    let recordsData = new Array(7).fill(0);
+    let archivedData = new Array(7).fill(0);
+
+    // Fill data from MongoDB results
+    result.forEach(({ _id, records, archived }) => {
+      const dayIndex = (_id - 1) % 7; // Convert MongoDB (1-7) to JS (0-6)
+      recordsData[dayIndex] = records;
+      archivedData[dayIndex] = archived;
+    });
+
+    // **Ensure today's data is last in the array**
+    const reorderedRecordsData = [
+      ...recordsData.slice(todayIndex + 1),
+      ...recordsData.slice(0, todayIndex),
+      recordsData[todayIndex], // Move today’s value to the last index
+    ];
+
+    const reorderedArchivedData = [
+      ...archivedData.slice(todayIndex + 1),
+      ...archivedData.slice(0, todayIndex),
+      archivedData[todayIndex], // Move today’s value to the last index
+    ];
+
+    const reorderedDays = [
+      ...daysOfWeek.slice(todayIndex + 1),
+      ...daysOfWeek.slice(0, todayIndex),
+      "Today", // Replace the last label with "Today"
+    ];
+
+    const spcResident = await Record.countDocuments({ spcResident: "YES" });
+    const outsideSPC = await Record.countDocuments({ spcResident: "NO" });
+    const totalRecords = await Record.countDocuments({ archived: false });
+    const totalMale = await Record.countDocuments({ gender: "MALE" });
+    const totalFemale = await Record.countDocuments({ gender: "FEMALE" });
+    const totalOtherGender = totalRecords - (totalMale + totalFemale);
+
+    const _result = {
+      totalRecords,
+      totalMale,
+      totalFemale,
+      totalOtherGender,
+      residencyData: [
+        {
+          id: 0,
+          value: spcResident,
+          label: "SPC Resident",
+          color: "#075FC8",
+        },
+        {
+          id: 1,
+          value: outsideSPC,
+          label: "Outside SPC",
+          color: "#ECEDFC",
+        },
+      ],
+      data: [
+        { data: reorderedRecordsData, label: "Records" },
+        { data: reorderedArchivedData, label: "Archived" },
+      ],
+      labels: reorderedDays,
+    };
+
+    res.json(_result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getRecords,
   addRecords,
@@ -152,4 +240,5 @@ module.exports = {
   archiveRecord,
   getAllArchivedRecords,
   restoreRecord,
+  getAnalytics,
 };
