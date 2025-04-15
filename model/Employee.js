@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const recordSchema = new Schema({
+const employeeSchema = new Schema({
   fname: {
     type: String,
     required: true,
@@ -14,11 +14,27 @@ const recordSchema = new Schema({
     type: String,
     required: true,
   },
-  studentIdNo: {
+  employeeIdNo: {
     type: String,
     required: true,
   },
+  department: {
+    type: String,
+    required: true,
+  },
+  position: {
+    type: String,
+    required: true,
+  },
+  birthDate: {
+    type: Date,
+    required: false,
+  },
   age: {
+    type: String,
+    required: true,
+  },
+  civilStatus: {
     type: String,
     required: true,
   },
@@ -30,68 +46,63 @@ const recordSchema = new Schema({
     type: String,
     required: false,
   },
-  pronouns: {
+  sexualOrientation: {
     type: String,
     required: false,
   },
-  civilStatus: {
+  disabilityStatus: {
     type: String,
-    required: true,
+    required: false,
   },
-  nationality: {
+  disabilitySpecify: {
     type: String,
-    required: true,
+    required: false,
+  },
+  ethnicGroup: {
+    type: String,
+    required: false,
+  },
+  noOfDependents: {
+    type: String,
+    required: false,
+  },
+  soloParent: {
+    type: String,
+    required: false,
+  },
+  caregivingResponsibilities: {
+    type: String,
+    required: false,
+  },
+  caregivingResponsibilitiesSpecify: {
+    type: String,
+    required: false,
+  },
+  educationalAttainment: {
+    type: String,
+    required: false,
+  },
+  employmentStatus: {
+    type: String,
+    required: false,
+  },
+  lengthOfService: {
+    type: String,
+    required: false,
+  },
+  attendGenderSensitivityTraining: {
+    type: String,
+    required: false,
+  },
+  trainingSpecify: {
+    type: String,
+    required: false,
+  },
+  yearAndTitleOfTraining: {
+    type: String,
+    required: false,
   },
 
-  email: {
-    type: String,
-    required: true,
-  },
-  address: {
-    type: String,
-    required: true,
-  },
-  program: {
-    type: String,
-    required: true,
-  },
-  yearLevel: {
-    type: String,
-    required: true,
-  },
-  section: {
-    type: String,
-    required: true,
-  },
-  gender: {
-    type: String,
-    required: true,
-  },
-  otherGender: {
-    type: String,
-    required: false,
-  },
-  governmentBenificiaries: {
-    type: String,
-    required: true,
-  },
-
-  comorbidity: {
-    type: String,
-    required: false,
-  },
-  PWD: {
-    type: String,
-    required: true,
-  },
-  socioEconomicStatus: {
-    type: String,
-    required: false,
-  },
-  spcResident: {
-    type: String,
-    required: true,
-  },
   archived: {
     type: Boolean,
     required: true,
@@ -108,4 +119,4 @@ const recordSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("Record", recordSchema);
+module.exports = mongoose.model("Employee", employeeSchema);
