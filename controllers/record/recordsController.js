@@ -150,81 +150,67 @@ const restoreRecord = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 const getAnalytics = async (req, res) => {
   try {
     const result = await Record.aggregate([
       {
         $group: {
-          _id: { $dayOfWeek: "$createdAt" }, // MongoDB: 1 = Sunday, 7 = Saturday
+          _id: { $dayOfWeek: "$createdAt" }, // 1 = Sunday, 7 = Saturday
           records: { $sum: 1 },
           archived: { $sum: { $cond: ["$archived", 1, 0] } },
         },
       },
-      { $sort: { _id: 1 } }, // Sort by day of week
+      { $sort: { _id: 1 } },
     ]);
-
-    console.log("result 1");
-    console.log(result);
 
     // Get today's index (0 = Sunday, 6 = Saturday)
     const todayIndex = new Date().getDay();
 
-    // Define labels but replace today’s day with "Today"
+    // Labels with final "Today"
     const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    // Initialize arrays with zeros
-    let recordsData = new Array(7).fill(0);
-    let archivedData = new Array(7).fill(0);
+    // Fill data from aggregation results
+    const recordsData = new Array(7).fill(0);
+    const archivedData = new Array(7).fill(0);
 
-    // Fill data from MongoDB results
     result.forEach(({ _id, records, archived }) => {
-      const dayIndex = (_id - 1) % 7; // Convert MongoDB (1-7) to JS (0-6)
+      const dayIndex = (_id - 1) % 7; // MongoDB: 1-7 -> JS: 0-6
       recordsData[dayIndex] = records;
       archivedData[dayIndex] = archived;
     });
 
-    console.log("result 2");
-    console.log(result);
-
-    // **Ensure today's data is last in the array**
+    // Reorder so today is at the end
     const reorderedRecordsData = [
       ...recordsData.slice(todayIndex + 1),
       ...recordsData.slice(0, todayIndex),
-      recordsData[todayIndex], // Move today’s value to the last index
+      recordsData[todayIndex],
     ];
 
     const reorderedArchivedData = [
       ...archivedData.slice(todayIndex + 1),
       ...archivedData.slice(0, todayIndex),
-      archivedData[todayIndex], // Move today’s value to the last index
+      archivedData[todayIndex],
     ];
 
     const reorderedDays = [
       ...daysOfWeek.slice(todayIndex + 1),
       ...daysOfWeek.slice(0, todayIndex),
-      "Today", // Replace the last label with "Today"
+      "Today",
     ];
 
-    const spcResident = await Record.countDocuments({
-      spcResident: "YES",
-      archived: false,
-    });
-    const outsideSPC = await Record.countDocuments({
-      spcResident: "NO",
-      archived: false,
-    });
-    const totalRecords = await Record.countDocuments({ archived: false });
-    const totalMale = await Record.countDocuments({
-      gender: "MALE",
-      archived: false,
-    });
-    const totalFemale = await Record.countDocuments({
-      gender: "FEMALE",
-      archived: false,
-    });
+    // Additional Stats
+    const [spcResident, outsideSPC, totalRecords, totalMale, totalFemale] =
+      await Promise.all([
+        Record.countDocuments({ spcResident: "YES", archived: false }),
+        Record.countDocuments({ spcResident: "NO", archived: false }),
+        Record.countDocuments({ archived: false }),
+        Record.countDocuments({ gender: "MALE", archived: false }),
+        Record.countDocuments({ gender: "FEMALE", archived: false }),
+      ]);
+
     const totalOtherGender = totalRecords - (totalMale + totalFemale);
 
+    // Final Response
     const _result = {
       totalRecords,
       totalMale,
@@ -253,9 +239,8 @@ const getAnalytics = async (req, res) => {
 
     res.json(_result);
   } catch (error) {
-    console.log(error);
-
-    res.status(500).json({ message: error.message });
+    console.error("Error in getAnalytics:", error.stack || error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 

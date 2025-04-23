@@ -2,19 +2,23 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const recordSchema = new Schema({
-  fname: {
-    type: String,
-    required: true,
-  },
-  mname: {
-    type: String,
-    required: true,
-  },
-  lname: {
-    type: String,
-    required: true,
-  },
   studentIdNo: {
+    type: String,
+    required: true,
+  },
+  fullname: {
+    type: String,
+    required: true,
+  },
+  brgy: {
+    type: String,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
+  },
+  province: {
     type: String,
     required: true,
   },
@@ -30,7 +34,15 @@ const recordSchema = new Schema({
     type: String,
     required: false,
   },
+  otherGender: {
+    type: String,
+    required: false,
+  },
   pronouns: {
+    type: String,
+    required: false,
+  },
+  otherPronouns: {
     type: String,
     required: false,
   },
@@ -43,11 +55,7 @@ const recordSchema = new Schema({
     required: true,
   },
 
-  email: {
-    type: String,
-    required: true,
-  },
-  address: {
+  school: {
     type: String,
     required: true,
   },
@@ -56,6 +64,86 @@ const recordSchema = new Schema({
     required: true,
   },
   yearLevel: {
+    type: String,
+    required: true,
+  },
+  scholarship: {
+    type: String,
+    required: true,
+  },
+  academicStanding: {
+    type: String,
+    required: true,
+  },
+  otherAcademicStanding: {
+    type: String,
+    required: false,
+  },
+  livingArrangement: {
+    type: String,
+    required: true,
+  },
+  householdIncomeLevel: {
+    type: String,
+    required: true,
+  },
+  parttimeJob: {
+    type: String,
+    required: false,
+  },
+  sourceFinancialSupport: {
+    type: String,
+    required: false,
+  },
+  otherSourceFinancialSupport: {
+    type: String,
+    required: false,
+  },
+  disability: {
+    type: String,
+    required: false,
+  },
+  specifyDisability: {
+    type: String,
+    required: false,
+  },
+  accessHealthcare: {
+    type: String,
+    required: false,
+  },
+  healthInsuranceProgram: {
+    type: String,
+    required: false,
+  },
+  stressAnxiety: {
+    type: String,
+    required: false,
+  },
+  discrimination: {
+    type: String,
+    required: false,
+  },
+  studentOrganizations: {
+    type: String,
+    required: false,
+  },
+  specifyStudentOrganizations: {
+    type: String,
+    required: false,
+  },
+  GADSeminar: {
+    type: String,
+    required: false,
+  },
+  InterestedGADSeminar: {
+    type: String,
+    required: false,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  address: {
     type: String,
     required: true,
   },
