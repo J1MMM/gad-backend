@@ -22,7 +22,6 @@ const getRecords = async (req, res) => {
       ...obj.toObject(),
       id: obj._id,
       programYearSection: `${obj.program}-${obj.yearLevel}${obj.section}`,
-      fullname: `${obj.fname} ${obj.mname} ${obj.lname}`,
     }));
     res.json(records);
   } catch (error) {
@@ -32,6 +31,7 @@ const getRecords = async (req, res) => {
 
 const addRecords = async (req, res) => {
   const recordData = req.body;
+  console.log(recordData);
 
   // Validate input
   if (!recordData || Object.keys(recordData).length === 0) {

@@ -145,7 +145,7 @@ const recordSchema = new Schema({
   },
   address: {
     type: String,
-    required: true,
+    required: false,
   },
   section: {
     type: String,
@@ -170,7 +170,7 @@ const recordSchema = new Schema({
   },
   PWD: {
     type: String,
-    required: true,
+    required: false,
   },
   socioEconomicStatus: {
     type: String,
