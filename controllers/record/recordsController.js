@@ -22,6 +22,7 @@ const getRecords = async (req, res) => {
       ...obj.toObject(),
       id: obj._id,
       programYearSection: `${obj.program}-${obj.yearLevel}${obj.section}`,
+      completeAddress: `${obj.brgy}, ${obj.city} ${obj.province}`,
     }));
     res.json(records);
   } catch (error) {
@@ -124,7 +125,7 @@ const getAllArchivedRecords = async (req, res) => {
       ...obj.toObject(),
       id: obj._id,
       programYearSection: `${obj.program}-${obj.yearLevel}${obj.section}`,
-      fullname: `${obj.fname} ${obj.mname} ${obj.lname}`,
+      completeAddress: `${obj.brgy}, ${obj.city} ${obj.province}`,
     }));
     res.json(records);
   } catch (error) {
@@ -152,92 +153,93 @@ const restoreRecord = async (req, res) => {
 };
 const getAnalytics = async (req, res) => {
   try {
-    const result = await Record.aggregate([
-      {
-        $group: {
-          _id: { $dayOfWeek: "$createdAt" }, // 1 = Sunday, 7 = Saturday
-          records: { $sum: 1 },
-          archived: { $sum: { $cond: ["$archived", 1, 0] } },
-        },
-      },
-      { $sort: { _id: 1 } },
-    ]);
+    // const result = await Record.aggregate([
+    //   {
+    //     $group: {
+    //       _id: { $dayOfWeek: "$createdAt" }, // 1 = Sunday, 7 = Saturday
+    //       records: { $sum: 1 },
+    //       archived: { $sum: { $cond: ["$archived", 1, 0] } },
+    //     },
+    //   },
+    //   { $sort: { _id: 1 } },
+    // ]);
 
-    // Get today's index (0 = Sunday, 6 = Saturday)
-    const todayIndex = new Date().getDay();
+    // // Get today's index (0 = Sunday, 6 = Saturday)
+    // const todayIndex = new Date().getDay();
 
-    // Labels with final "Today"
-    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    // // Labels with final "Today"
+    // const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    // Fill data from aggregation results
-    const recordsData = new Array(7).fill(0);
-    const archivedData = new Array(7).fill(0);
+    // // Fill data from aggregation results
+    // const recordsData = new Array(7).fill(0);
+    // const archivedData = new Array(7).fill(0);
 
-    result.forEach(({ _id, records, archived }) => {
-      const dayIndex = (_id - 1) % 7; // MongoDB: 1-7 -> JS: 0-6
-      recordsData[dayIndex] = records;
-      archivedData[dayIndex] = archived;
-    });
+    // result.forEach(({ _id, records, archived }) => {
+    //   const dayIndex = (_id - 1) % 7; // MongoDB: 1-7 -> JS: 0-6
+    //   recordsData[dayIndex] = records;
+    //   archivedData[dayIndex] = archived;
+    // });
 
-    // Reorder so today is at the end
-    const reorderedRecordsData = [
-      ...recordsData.slice(todayIndex + 1),
-      ...recordsData.slice(0, todayIndex),
-      recordsData[todayIndex],
-    ];
+    // // Reorder so today is at the end
+    // const reorderedRecordsData = [
+    //   ...recordsData.slice(todayIndex + 1),
+    //   ...recordsData.slice(0, todayIndex),
+    //   recordsData[todayIndex],
+    // ];
 
-    const reorderedArchivedData = [
-      ...archivedData.slice(todayIndex + 1),
-      ...archivedData.slice(0, todayIndex),
-      archivedData[todayIndex],
-    ];
+    // const reorderedArchivedData = [
+    //   ...archivedData.slice(todayIndex + 1),
+    //   ...archivedData.slice(0, todayIndex),
+    //   archivedData[todayIndex],
+    // ];
 
-    const reorderedDays = [
-      ...daysOfWeek.slice(todayIndex + 1),
-      ...daysOfWeek.slice(0, todayIndex),
-      "Today",
-    ];
+    // const reorderedDays = [
+    //   ...daysOfWeek.slice(todayIndex + 1),
+    //   ...daysOfWeek.slice(0, todayIndex),
+    //   "Today",
+    // ];
 
-    // Additional Stats
-    const [spcResident, outsideSPC, totalRecords, totalMale, totalFemale] =
-      await Promise.all([
-        Record.countDocuments({ spcResident: "YES", archived: false }),
-        Record.countDocuments({ spcResident: "NO", archived: false }),
-        Record.countDocuments({ archived: false }),
-        Record.countDocuments({ gender: "MALE", archived: false }),
-        Record.countDocuments({ gender: "FEMALE", archived: false }),
-      ]);
+    // // Additional Stats
+    // const [spcResident, outsideSPC, totalRecords, totalMale, totalFemale] =
+    //   await Promise.all([
+    //     Record.countDocuments({ spcResident: "YES", archived: false }),
+    //     Record.countDocuments({ spcResident: "NO", archived: false }),
+    //     Record.countDocuments({ archived: false }),
+    //     Record.countDocuments({ gender: "MALE", archived: false }),
+    //     Record.countDocuments({ gender: "FEMALE", archived: false }),
+    //   ]);
 
-    const totalOtherGender = totalRecords - (totalMale + totalFemale);
+    // const totalOtherGender = totalRecords - (totalMale + totalFemale);
 
-    // Final Response
-    const _result = {
-      totalRecords,
-      totalMale,
-      totalFemale,
-      totalOtherGender,
-      residencyData: [
-        {
-          id: 0,
-          value: spcResident,
-          label: "SPC Resident",
-          color: "#075FC8",
-        },
-        {
-          id: 1,
-          value: outsideSPC,
-          label: "Outside SPC",
-          color: "#ECEDFC",
-        },
-      ],
-      data: [
-        { data: reorderedRecordsData, label: "Records" },
-        { data: reorderedArchivedData, label: "Archived" },
-      ],
-      labels: reorderedDays,
-    };
+    // // Final Response
+    // const _result = {
+    //   totalRecords,
+    //   totalMale,
+    //   totalFemale,
+    //   totalOtherGender,
+    //   residencyData: [
+    //     {
+    //       id: 0,
+    //       value: spcResident,
+    //       label: "SPC Resident",
+    //       color: "#075FC8",
+    //     },
+    //     {
+    //       id: 1,
+    //       value: outsideSPC,
+    //       label: "Outside SPC",
+    //       color: "#ECEDFC",
+    //     },
+    //   ],
+    //   data: [
+    //     { data: reorderedRecordsData, label: "Records" },
+    //     { data: reorderedArchivedData, label: "Archived" },
+    //   ],
+    //   labels: reorderedDays,
+    // };
 
-    res.json(_result);
+    // res.json(_result);
+    res.sendStatus(200);
   } catch (error) {
     console.error("Error in getAnalytics:", error.stack || error);
     res.status(500).json({ message: "Internal Server Error" });

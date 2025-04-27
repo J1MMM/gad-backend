@@ -2,15 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const employeeSchema = new Schema({
-  fname: {
-    type: String,
-    required: true,
-  },
-  mname: {
-    type: String,
-    required: true,
-  },
-  lname: {
+  fullname: {
     type: String,
     required: true,
   },
@@ -28,9 +20,29 @@ const employeeSchema = new Schema({
   },
   birthDate: {
     type: Date,
-    required: false,
+    required: true,
   },
   age: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: false,
+  },
+  brgy: {
+    type: String,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
+  },
+  province: {
+    type: String,
+    required: true,
+  },
+  spcResident: {
     type: String,
     required: true,
   },
@@ -46,7 +58,15 @@ const employeeSchema = new Schema({
     type: String,
     required: false,
   },
+  otherGender: {
+    type: String,
+    required: false,
+  },
   sexualOrientation: {
+    type: String,
+    required: false,
+  },
+  otherSexualOrientation: {
     type: String,
     required: false,
   },
@@ -82,7 +102,15 @@ const employeeSchema = new Schema({
     type: String,
     required: false,
   },
+  otherEducationalAttainment: {
+    type: String,
+    required: false,
+  },
   employmentStatus: {
+    type: String,
+    required: false,
+  },
+  otherEmploymentStatus: {
     type: String,
     required: false,
   },
@@ -94,11 +122,12 @@ const employeeSchema = new Schema({
     type: String,
     required: false,
   },
-  trainingSpecify: {
+
+  yearAndTitleOfTraining: {
     type: String,
     required: false,
   },
-  yearAndTitleOfTraining: {
+  remarks: {
     type: String,
     required: false,
   },

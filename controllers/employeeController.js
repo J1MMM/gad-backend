@@ -17,8 +17,7 @@ const getEmployees = async (req, res) => {
     const records = result.map((obj) => ({
       ...obj.toObject(),
       id: obj._id,
-      programYearSection: `${obj.program}-${obj.yearLevel}${obj.section}`,
-      fullname: `${obj.fname} ${obj.mname} ${obj.lname}`,
+      completeAddress: `${obj.brgy}, ${obj.city} ${obj.province}`,
     }));
     res.json(records);
   } catch (error) {
@@ -119,8 +118,7 @@ const getAllArchivedEmployees = async (req, res) => {
     const records = result.map((obj) => ({
       ...obj.toObject(),
       id: obj._id,
-      programYearSection: `${obj.program}-${obj.yearLevel}${obj.section}`,
-      fullname: `${obj.fname} ${obj.mname} ${obj.lname}`,
+      completeAddress: `${obj.brgy}, ${obj.city} ${obj.province}`,
     }));
     res.json(records);
   } catch (error) {
@@ -130,6 +128,7 @@ const getAllArchivedEmployees = async (req, res) => {
 
 const restoreEmployee = async (req, res) => {
   const { id } = req.params;
+  console.log(id);
 
   try {
     const record = await Employee.findOne({ _id: id });
