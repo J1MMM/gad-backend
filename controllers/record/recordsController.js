@@ -6,10 +6,23 @@ const Record = require("../../model/Record");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
+const Employee = require("../../model/Employee");
 
 // Extend dayjs with the required plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
+
+function getLast7DaysLabels() {
+  const labels = [];
+
+  for (let i = 6; i >= 1; i--) {
+    labels.push(dayjs().subtract(i, "day").format("ddd"));
+  }
+
+  labels.push("Today");
+
+  return labels;
+}
 
 const getRecords = async (req, res) => {
   try {
@@ -153,93 +166,291 @@ const restoreRecord = async (req, res) => {
 };
 const getAnalytics = async (req, res) => {
   try {
-    // const result = await Record.aggregate([
-    //   {
-    //     $group: {
-    //       _id: { $dayOfWeek: "$createdAt" }, // 1 = Sunday, 7 = Saturday
-    //       records: { $sum: 1 },
-    //       archived: { $sum: { $cond: ["$archived", 1, 0] } },
-    //     },
-    //   },
-    //   { $sort: { _id: 1 } },
-    // ]);
+    const [
+      studentSpcResident,
+      studentOutsideSPC,
+      studentTotalRecords,
+      studentTotalMale,
+      studentTotalFemale,
+    ] = await Promise.all([
+      Record.countDocuments({ spcResident: "Yes", archived: false }),
+      Record.countDocuments({ spcResident: "No", archived: false }),
+      Record.countDocuments({ archived: false }),
+      Record.countDocuments({ gender: "Male", archived: false }),
+      Record.countDocuments({ gender: "Female", archived: false }),
+    ]);
 
-    // // Get today's index (0 = Sunday, 6 = Saturday)
-    // const todayIndex = new Date().getDay();
+    const [
+      employeeSpcResident,
+      employeeOutsideSPC,
+      employeeTotalRecords,
+      employeeTotalMale,
+      employeeTotalFemale,
+    ] = await Promise.all([
+      Employee.countDocuments({ spcResident: "Yes", archived: false }),
+      Employee.countDocuments({ spcResident: "No", archived: false }),
+      Employee.countDocuments({ archived: false }),
+      Employee.countDocuments({ gender: "Man", archived: false }),
+      Employee.countDocuments({ gender: "Woman", archived: false }),
+    ]);
+    //for person with disability chart
+    const [
+      pwdEmployeeTotalRecords,
+      pwdEmployeeTotalMale,
+      pwdEmployeeTotalFemale,
+    ] = await Promise.all([
+      Employee.countDocuments({
+        disabilityStatus: "With Disability",
+        archived: false,
+      }),
+      Employee.countDocuments({
+        disabilityStatus: "With Disability",
+        gender: "Man",
+        archived: false,
+      }),
+      Employee.countDocuments({
+        disabilityStatus: "With Disability",
+        gender: "Woman",
+        archived: false,
+      }),
+    ]);
 
-    // // Labels with final "Today"
-    // const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const [pwdStudentTotalRecords, pwdStudentTotalMale, pwdStudentTotalFemale] =
+      await Promise.all([
+        Record.countDocuments({
+          disability: "Yes",
+          archived: false,
+        }),
+        Record.countDocuments({
+          disability: "Yes",
+          gender: "Male",
+          archived: false,
+        }),
+        Record.countDocuments({
+          disability: "Yes",
+          gender: "Female",
+          archived: false,
+        }),
+      ]);
 
-    // // Fill data from aggregation results
-    // const recordsData = new Array(7).fill(0);
-    // const archivedData = new Array(7).fill(0);
+    const [
+      studentAdded7DaysAgo,
+      studentAdded6DaysAgo,
+      studentAdded5DaysAgo,
+      studentAdded4DaysAgo,
+      studentAdded3DaysAgo,
+      studentAdded2DaysAgo,
+      studentAddedToday,
+    ] = await Promise.all([
+      Record.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(6, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(6, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Record.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(5, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(5, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Record.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(4, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(4, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Record.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(3, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(3, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Record.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(2, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(2, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Record.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(1, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(1, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Record.countDocuments({
+        createdAt: {
+          $gte: dayjs().startOf("day").toDate(),
+          $lt: dayjs().endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+    ]);
+    const [
+      employeeAdded7DaysAgo,
+      employeeAdded6DaysAgo,
+      employeeAdded5DaysAgo,
+      employeeAdded4DaysAgo,
+      employeeAdded3DaysAgo,
+      employeeAdded2DaysAgo,
+      employeeAddedToday,
+    ] = await Promise.all([
+      Employee.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(6, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(6, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Employee.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(5, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(5, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Employee.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(4, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(4, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Employee.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(3, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(3, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Employee.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(2, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(2, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Employee.countDocuments({
+        createdAt: {
+          $gte: dayjs().subtract(1, "day").startOf("day").toDate(),
+          $lt: dayjs().subtract(1, "day").endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+      Employee.countDocuments({
+        createdAt: {
+          $gte: dayjs().startOf("day").toDate(),
+          $lt: dayjs().endOf("day").toDate(),
+        },
+        archived: false,
+      }),
+    ]);
 
-    // result.forEach(({ _id, records, archived }) => {
-    //   const dayIndex = (_id - 1) % 7; // MongoDB: 1-7 -> JS: 0-6
-    //   recordsData[dayIndex] = records;
-    //   archivedData[dayIndex] = archived;
-    // });
+    const totalRecords = studentTotalRecords + employeeTotalRecords;
+    const totalMale = studentTotalMale + employeeTotalMale;
+    const totalFemale = studentTotalFemale + employeeTotalFemale;
+    const totalOtherGender = totalRecords - (totalMale + totalFemale);
+    const spcResident = studentSpcResident + employeeSpcResident;
+    const outsideSPC = studentOutsideSPC + employeeOutsideSPC;
 
-    // // Reorder so today is at the end
-    // const reorderedRecordsData = [
-    //   ...recordsData.slice(todayIndex + 1),
-    //   ...recordsData.slice(0, todayIndex),
-    //   recordsData[todayIndex],
-    // ];
+    const pwdTotal = pwdEmployeeTotalRecords + pwdStudentTotalRecords;
+    const pwdTotalMale = pwdEmployeeTotalMale + pwdStudentTotalMale;
+    const pwdTotalMalePercent = ((pwdTotalMale / pwdTotal) * 100).toFixed(2);
+    const pwdTotalFemale = pwdEmployeeTotalFemale + pwdStudentTotalFemale;
+    const pwdTotalFemalePercent = ((pwdTotalFemale / pwdTotal) * 100).toFixed(
+      2
+    );
+    const pwdOtherGender = pwdTotal - (pwdTotalMale + pwdTotalFemale);
+    const pwdOtherGenderPercent = ((pwdOtherGender / pwdTotal) * 100).toFixed(
+      2
+    );
 
-    // const reorderedArchivedData = [
-    //   ...archivedData.slice(todayIndex + 1),
-    //   ...archivedData.slice(0, todayIndex),
-    //   archivedData[todayIndex],
-    // ];
+    const response = {
+      totalRecords,
+      totalMale,
+      totalFemale,
+      totalOtherGender,
 
-    // const reorderedDays = [
-    //   ...daysOfWeek.slice(todayIndex + 1),
-    //   ...daysOfWeek.slice(0, todayIndex),
-    //   "Today",
-    // ];
+      pwdTotal,
+      pwdTotalMalePercent,
+      pwdTotalFemalePercent,
+      pwdOtherGenderPercent,
 
-    // // Additional Stats
-    // const [spcResident, outsideSPC, totalRecords, totalMale, totalFemale] =
-    //   await Promise.all([
-    //     Record.countDocuments({ spcResident: "YES", archived: false }),
-    //     Record.countDocuments({ spcResident: "NO", archived: false }),
-    //     Record.countDocuments({ archived: false }),
-    //     Record.countDocuments({ gender: "MALE", archived: false }),
-    //     Record.countDocuments({ gender: "FEMALE", archived: false }),
-    //   ]);
+      pwdChartData: [
+        {
+          id: 0,
+          value: pwdTotalMale || 0,
+          label: "Male",
+          color: "#02A3FE",
+        },
+        {
+          id: 1,
+          value: pwdTotalFemale || 0,
+          label: "Female",
+          color: "#EC49A6",
+        },
+        {
+          id: 2,
+          value: pwdOtherGender || 0,
+          label: "Others",
+          color: "#FED808",
+        },
+      ],
 
-    // const totalOtherGender = totalRecords - (totalMale + totalFemale);
+      residencyChartData: [
+        {
+          id: 0,
+          value: spcResident || 0,
+          label: "SPC Resident",
+          color: "#6200E8",
+        },
+        {
+          id: 1,
+          value: outsideSPC || 0,
+          label: "Outside SPC",
+          color: "#ECEDFC",
+        },
+      ],
 
-    // // Final Response
-    // const _result = {
-    //   totalRecords,
-    //   totalMale,
-    //   totalFemale,
-    //   totalOtherGender,
-    //   residencyData: [
-    //     {
-    //       id: 0,
-    //       value: spcResident,
-    //       label: "SPC Resident",
-    //       color: "#075FC8",
-    //     },
-    //     {
-    //       id: 1,
-    //       value: outsideSPC,
-    //       label: "Outside SPC",
-    //       color: "#ECEDFC",
-    //     },
-    //   ],
-    //   data: [
-    //     { data: reorderedRecordsData, label: "Records" },
-    //     { data: reorderedArchivedData, label: "Archived" },
-    //   ],
-    //   labels: reorderedDays,
-    // };
+      recordsOverview: [
+        {
+          color: "#2E96FF",
+          data: [
+            studentAdded7DaysAgo,
+            studentAdded6DaysAgo,
+            studentAdded5DaysAgo,
+            studentAdded4DaysAgo,
+            studentAdded3DaysAgo,
+            studentAdded2DaysAgo,
+            studentAddedToday,
+          ],
+          label: "Students",
+        },
+        {
+          color: "#B800D8",
+          data: [
+            employeeAdded7DaysAgo,
+            employeeAdded6DaysAgo,
+            employeeAdded5DaysAgo,
+            employeeAdded4DaysAgo,
+            employeeAdded3DaysAgo,
+            employeeAdded2DaysAgo,
+            employeeAddedToday,
+          ],
+          label: "Employees",
+        },
+      ],
 
-    // res.json(_result);
-    res.sendStatus(200);
+      recordsOverviewLabel: getLast7DaysLabels(),
+    };
+
+    res.json(response);
   } catch (error) {
     console.error("Error in getAnalytics:", error.stack || error);
     res.status(500).json({ message: "Internal Server Error" });
