@@ -9,7 +9,9 @@ dayjs.extend(timezone);
 
 const getEmployees = async (req, res) => {
   try {
-    const result = await Employee.find({ archived: false });
+    const result = await Employee.find({ archived: false }).sort({
+      fullname: 1,
+    });
     if (!result || result.length === 0) {
       return res.status(204).json({ message: "No records found" });
     }

@@ -26,7 +26,7 @@ function getLast7DaysLabels() {
 
 const getRecords = async (req, res) => {
   try {
-    const result = await Record.find({ archived: false });
+    const result = await Record.find({ archived: false }).sort({ fullname: 1 });
     if (!result || result.length === 0) {
       return res.status(204).json({ message: "No records found" });
     }
@@ -167,73 +167,6 @@ const restoreRecord = async (req, res) => {
 const getAnalytics = async (req, res) => {
   try {
     const [
-      studentSpcResident,
-      studentOutsideSPC,
-      studentTotalRecords,
-      studentTotalMale,
-      studentTotalFemale,
-    ] = await Promise.all([
-      Record.countDocuments({ spcResident: "Yes", archived: false }),
-      Record.countDocuments({ spcResident: "No", archived: false }),
-      Record.countDocuments({ archived: false }),
-      Record.countDocuments({ gender: "Male", archived: false }),
-      Record.countDocuments({ gender: "Female", archived: false }),
-    ]);
-
-    const [
-      employeeSpcResident,
-      employeeOutsideSPC,
-      employeeTotalRecords,
-      employeeTotalMale,
-      employeeTotalFemale,
-    ] = await Promise.all([
-      Employee.countDocuments({ spcResident: "Yes", archived: false }),
-      Employee.countDocuments({ spcResident: "No", archived: false }),
-      Employee.countDocuments({ archived: false }),
-      Employee.countDocuments({ gender: "Man", archived: false }),
-      Employee.countDocuments({ gender: "Woman", archived: false }),
-    ]);
-    //for person with disability chart
-    const [
-      pwdEmployeeTotalRecords,
-      pwdEmployeeTotalMale,
-      pwdEmployeeTotalFemale,
-    ] = await Promise.all([
-      Employee.countDocuments({
-        disabilityStatus: "With Disability",
-        archived: false,
-      }),
-      Employee.countDocuments({
-        disabilityStatus: "With Disability",
-        gender: "Man",
-        archived: false,
-      }),
-      Employee.countDocuments({
-        disabilityStatus: "With Disability",
-        gender: "Woman",
-        archived: false,
-      }),
-    ]);
-
-    const [pwdStudentTotalRecords, pwdStudentTotalMale, pwdStudentTotalFemale] =
-      await Promise.all([
-        Record.countDocuments({
-          disability: "Yes",
-          archived: false,
-        }),
-        Record.countDocuments({
-          disability: "Yes",
-          gender: "Male",
-          archived: false,
-        }),
-        Record.countDocuments({
-          disability: "Yes",
-          gender: "Female",
-          archived: false,
-        }),
-      ]);
-
-    const [
       studentAdded7DaysAgo,
       studentAdded6DaysAgo,
       studentAdded5DaysAgo,
@@ -292,6 +225,7 @@ const getAnalytics = async (req, res) => {
         archived: false,
       }),
     ]);
+
     const [
       employeeAdded7DaysAgo,
       employeeAdded6DaysAgo,
@@ -352,72 +286,7 @@ const getAnalytics = async (req, res) => {
       }),
     ]);
 
-    const totalRecords = studentTotalRecords + employeeTotalRecords;
-    const totalMale = studentTotalMale + employeeTotalMale;
-    const totalFemale = studentTotalFemale + employeeTotalFemale;
-    const totalOtherGender = totalRecords - (totalMale + totalFemale);
-    const spcResident = studentSpcResident + employeeSpcResident;
-    const outsideSPC = studentOutsideSPC + employeeOutsideSPC;
-
-    const pwdTotal = pwdEmployeeTotalRecords + pwdStudentTotalRecords;
-    const pwdTotalMale = pwdEmployeeTotalMale + pwdStudentTotalMale;
-    const pwdTotalMalePercent = ((pwdTotalMale / pwdTotal) * 100).toFixed(2);
-    const pwdTotalFemale = pwdEmployeeTotalFemale + pwdStudentTotalFemale;
-    const pwdTotalFemalePercent = ((pwdTotalFemale / pwdTotal) * 100).toFixed(
-      2
-    );
-    const pwdOtherGender = pwdTotal - (pwdTotalMale + pwdTotalFemale);
-    const pwdOtherGenderPercent = ((pwdOtherGender / pwdTotal) * 100).toFixed(
-      2
-    );
-
     const response = {
-      totalRecords,
-      totalMale,
-      totalFemale,
-      totalOtherGender,
-
-      pwdTotal,
-      pwdTotalMalePercent,
-      pwdTotalFemalePercent,
-      pwdOtherGenderPercent,
-
-      pwdChartData: [
-        {
-          id: 0,
-          value: pwdTotalMale || 0,
-          label: "Male",
-          color: "#02A3FE",
-        },
-        {
-          id: 1,
-          value: pwdTotalFemale || 0,
-          label: "Female",
-          color: "#EC49A6",
-        },
-        {
-          id: 2,
-          value: pwdOtherGender || 0,
-          label: "Others",
-          color: "#FED808",
-        },
-      ],
-
-      residencyChartData: [
-        {
-          id: 0,
-          value: spcResident || 0,
-          label: "SPC Resident",
-          color: "#6200E8",
-        },
-        {
-          id: 1,
-          value: outsideSPC || 0,
-          label: "Outside SPC",
-          color: "#ECEDFC",
-        },
-      ],
-
       recordsOverview: [
         {
           color: "#2E96FF",
@@ -457,6 +326,167 @@ const getAnalytics = async (req, res) => {
   }
 };
 
+const getCardsAnalytics = async (req, res) => {
+  try {
+    const [studentTotalRecords, studentTotalMale, studentTotalFemale] =
+      await Promise.all([
+        Record.countDocuments({ archived: false }),
+        Record.countDocuments({ gender: "Male", archived: false }),
+        Record.countDocuments({ gender: "Female", archived: false }),
+      ]);
+
+    const [employeeTotalRecords, employeeTotalMale, employeeTotalFemale] =
+      await Promise.all([
+        Employee.countDocuments({ archived: false }),
+        Employee.countDocuments({ gender: "Man", archived: false }),
+        Employee.countDocuments({ gender: "Woman", archived: false }),
+      ]);
+
+    const totalRecords = studentTotalRecords + employeeTotalRecords;
+    const totalMale = studentTotalMale + employeeTotalMale;
+    const totalFemale = studentTotalFemale + employeeTotalFemale;
+    const totalOtherGender = totalRecords - (totalMale + totalFemale);
+
+    const response = {
+      totalRecords,
+      totalMale,
+      totalFemale,
+      totalOtherGender,
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error in getAnalytics:", error.stack || error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const getPwdAnalytics = async (req, res) => {
+  try {
+    const [
+      pwdEmployeeTotalRecords,
+      pwdEmployeeTotalMale,
+      pwdEmployeeTotalFemale,
+    ] = await Promise.all([
+      Employee.countDocuments({
+        disabilityStatus: "With Disability",
+        archived: false,
+      }),
+      Employee.countDocuments({
+        disabilityStatus: "With Disability",
+        gender: "Man",
+        archived: false,
+      }),
+      Employee.countDocuments({
+        disabilityStatus: "With Disability",
+        gender: "Woman",
+        archived: false,
+      }),
+    ]);
+
+    const [pwdStudentTotalRecords, pwdStudentTotalMale, pwdStudentTotalFemale] =
+      await Promise.all([
+        Record.countDocuments({
+          disability: "Yes",
+          archived: false,
+        }),
+        Record.countDocuments({
+          disability: "Yes",
+          gender: "Male",
+          archived: false,
+        }),
+        Record.countDocuments({
+          disability: "Yes",
+          gender: "Female",
+          archived: false,
+        }),
+      ]);
+
+    const pwdTotal = pwdEmployeeTotalRecords + pwdStudentTotalRecords;
+    const pwdTotalMale = pwdEmployeeTotalMale + pwdStudentTotalMale;
+    const pwdTotalMalePercent = ((pwdTotalMale / pwdTotal) * 100).toFixed(2);
+    const pwdTotalFemale = pwdEmployeeTotalFemale + pwdStudentTotalFemale;
+    const pwdTotalFemalePercent = ((pwdTotalFemale / pwdTotal) * 100).toFixed(
+      2
+    );
+    const pwdOtherGender = pwdTotal - (pwdTotalMale + pwdTotalFemale);
+    const pwdOtherGenderPercent = ((pwdOtherGender / pwdTotal) * 100).toFixed(
+      2
+    );
+
+    const response = {
+      pwdTotal,
+      pwdTotalMalePercent,
+      pwdTotalFemalePercent,
+      pwdOtherGenderPercent,
+
+      pwdChartData: [
+        {
+          id: 0,
+          value: pwdTotalMale || 0,
+          label: "Male",
+          color: "#02A3FE",
+        },
+        {
+          id: 1,
+          value: pwdTotalFemale || 0,
+          label: "Female",
+          color: "#EC49A6",
+        },
+        {
+          id: 2,
+          value: pwdOtherGender || 0,
+          label: "Others",
+          color: "#FED808",
+        },
+      ],
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error in getAnalytics:", error.stack || error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const getResidencyAnalytics = async (req, res) => {
+  try {
+    const [studentSpcResident, studentOutsideSPC] = await Promise.all([
+      Record.countDocuments({ spcResident: "Yes", archived: false }),
+      Record.countDocuments({ spcResident: "No", archived: false }),
+    ]);
+
+    const [employeeSpcResident, employeeOutsideSPC] = await Promise.all([
+      Employee.countDocuments({ spcResident: "Yes", archived: false }),
+      Employee.countDocuments({ spcResident: "No", archived: false }),
+    ]);
+
+    const spcResident = studentSpcResident + employeeSpcResident;
+    const outsideSPC = studentOutsideSPC + employeeOutsideSPC;
+
+    const response = {
+      residencyChartData: [
+        {
+          id: 0,
+          value: spcResident || 0,
+          label: "SPC Resident",
+          color: "#6200E8",
+        },
+        {
+          id: 1,
+          value: outsideSPC || 0,
+          label: "Outside SPC",
+          color: "#ECEDFC",
+        },
+      ],
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error in getAnalytics:", error.stack || error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 module.exports = {
   getRecords,
   addRecords,
@@ -466,4 +496,7 @@ module.exports = {
   getAllArchivedRecords,
   restoreRecord,
   getAnalytics,
+  getCardsAnalytics,
+  getPwdAnalytics,
+  getResidencyAnalytics,
 };
